@@ -1,13 +1,13 @@
-import Header from './components/Header.js';
 import './App.css';
+
+import Dashboard from './dashboard/Dashboard.js'
+import Title from './dashboard/Title.js'
 
 function App() {
   return (
     <div>
-      <Header />
-      <Header />
-      <Header />
-      <Header />
+      <Title />
+      <Dashboard />
     </div>
   );
 }
