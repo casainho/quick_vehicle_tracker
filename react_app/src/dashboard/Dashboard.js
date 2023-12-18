@@ -91,7 +91,7 @@ export default function Dashboard() {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
-  };
+  };  
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -99,11 +99,11 @@ export default function Dashboard() {
         <CssBaseline />
         <AppBar position="absolute" open={open}>
           <Toolbar
-            sx={{
-              pr: '24px', // keep right padding when drawer closed
-            }}
+            // sx={{
+            //   pr: '24px', // keep right padding when drawer closed
+            // }}
           >
-            <IconButton
+            {/* <IconButton
               edge="start"
               color="inherit"
               aria-label="open drawer"
@@ -126,10 +126,9 @@ export default function Dashboard() {
             </Typography>
             <IconButton color="inherit">
               <Badge badgeContent={4} color="secondary">
-                {/* <NotificationsIcon /> */}
                 <SearchIcon />
               </Badge>
-            </IconButton>
+            </IconButton> */}
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -155,55 +154,23 @@ export default function Dashboard() {
         <Box
           component="main"
           sx={{
+            height: '100%',
             backgroundColor: (theme) =>
               theme.palette.mode === 'light'
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900],
-            flexGrow: 1,
-            height: '100vh',
-            overflow: 'auto',
           }}
         >
           <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid container spacing={3}>
-              {/* Chart */}
-              {/* <Grid item xs={12} md={8} lg={9}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: 240,
-                  }}
-                >
-                  <Chart />
-                </Paper>
-              </Grid> */}
-              {/* Recent Deposits */}
-              {/* <Grid item xs={12} md={4} lg={3}>
-                <Paper
-                  sx={{
-                    p: 2,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: 240,
-                  }}
-                >
-                  <Deposits />
-                </Paper>
-              </Grid> */}
-              {/* Recent Orders */}
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  {/* <Orders /> */}
-                  
-                  <RealTimeMapView />
-
+          <Container sx={{ mt: 4, mb: 4}} >
+            <Grid container spacing={1} >
+              <Grid item xs={12} >
+                <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }} >
+                  <RealTimeMapView sx={{ flex: 1, height: '100%' }} />
                 </Paper>
               </Grid>
             </Grid>
-            <Copyright sx={{ pt: 4 }} />
+            <Copyright sx={{ pt: 2 }} />
           </Container>
         </Box>
       </Box>

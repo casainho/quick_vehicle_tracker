@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Launch Chrome against localhost",
+        "type": "chrome",
+        "request": "launch",
+        "url": "http://localhost:3001",
+        "webRoot": "${workspaceFolder}"
+      },
+      {
+        // I adapted this from a config to debug tests
+        "name": "create-react-app",
+        "type": "node",
+        "request": "launch",
+        "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/react-scripts",
+        "args": ["start"],
+        "cwd": "${workspaceRoot}",
+        "protocol": "inspector",
+        "console": "integratedTerminal"
+      }
+    ]
+  }
