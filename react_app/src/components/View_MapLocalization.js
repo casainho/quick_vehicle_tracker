@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet'; // Make sure to import Leaflet library
 
-function RealTimeMapView() {
+function View_MapLocalization() {
 
   // This await fetch the data from the server that has the EScooter data like GPS lat and lon  
   const [data, setData] = useState(null);
@@ -33,7 +33,7 @@ function RealTimeMapView() {
   }, []); // Empty dependency array to run the effect only once on mount
 
   // This react component will be called again when data is fetched and will not enter this if
-  if (loading) {
+  if (data === null) {
     return <div>Loading...</div>;
   }
 
@@ -83,14 +83,15 @@ function RealTimeMapView() {
 
           {/* Use this Popup to show to user, the position and time details */}
           <Popup>
+            Date: {formatedDate}<br></br>
             Latitute: {lat}, Longitude: {lon}<br></br>
-            Date: {formatedDate}
+            <a href={`https://maps.google.com/?q=${lat},${lon}`} target="_blank" rel="noopener noreferrer">Open in Google Maps</a>
           </Popup>
-
+          
         </Marker>
       </MapContainer>
     </div>
   );
 }
 
-export default RealTimeMapView;
+export default View_MapLocalization;

@@ -15,12 +15,13 @@
     "react": "latest",
     "react-dom": "latest",
     "react-leaflet": "latest",
+    "react-router-dom": "^6.21.0",
     "react-scripts": "latest",
     "recharts": "^2.10.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=3001 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
