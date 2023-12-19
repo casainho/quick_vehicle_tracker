@@ -4,36 +4,32 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-function ListUsers() {
-  // This await fetch the data from the server that has Users
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:3010/users');
-        const result = await response.json();
-        setData(result);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, []); // Empty dependency array to run the effect only once on mount
-
-  // Returns the data, otherwise will return null
-  return data;
-}
-
 export default function View_ManageUsers() {
   const viewRef = useRef(null);
+  const [listUsers, setListUsers] = useState(null);
+  const [listUsersUpdated, setListUsersUpdated] = useState(false);
   const [refVisible, setRefVisible] = useState(false)
   const [availableWidthHeight, setAvailableWidthHeight] = useState([null, null]);
   const [userId, setUserId] = useState('');
   const [userName, setUserName] = useState('');
   const [showPopupAddUser, setShowPopupAddUser] = useState(false);
   const [showPopupRemoveUser, setShowPopupRemoveUser] = useState(false);
+
+  // const handleExportClick = () => {
+  //   if (viewRef.current) {
+  //     htmlToImage.toPng(viewRef.current)
+  //       .then((dataUrl) => {
+  //         // Create a temporary link element and trigger a download
+  //         const link = document.createElement('a');
+  //         link.href = dataUrl;
+  //         link.download = 'exported_map.png';
+  //         link.click();
+  //       })
+  //       .catch((error) => {
+  //         console.error('Error exporting map:', error);
+  //       });
+  //   }
+  // };
 
   // State to hold the data to be sent
   const [userData, setUserData] = useState({
@@ -42,11 +38,21 @@ export default function View_ManageUsers() {
   });
 
   const closePopupAddUser = () => {
+    setListUsersUpdated(false);
+    setListUsers(null);
+    setUserId('');
+    setUserName('');
+
     // Close the popup
     setShowPopupAddUser(false);
   };
 
   const closePopupRemoveUser = () => {
+    setListUsersUpdated(false);
+    setListUsers(null);
+    setUserId('');
+    setUserName('');
+    
     // Close the popup
     setShowPopupRemoveUser(false);
   };
@@ -68,11 +74,7 @@ export default function View_ManageUsers() {
       }
 
       const data = await response.json();
-      setShowPopupAddUser(true)
-
-      // Clear the input fields after handling
-      setUserId('');
-      setUserName('');
+      setShowPopupAddUser(true);
 
     } catch (error) {
       console.error('Error during POST request:', error.message);
@@ -136,20 +138,37 @@ export default function View_ManageUsers() {
     // Perform the DELETE request with the specified user ID
     handleDeleteRequest(userId);
   
-    // Clear the input fields after handling
-    setUserId('');
-    setUserName('');
   };
+
+  useEffect(() => {
+    let isMounted = true;
+  
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:3010/users');
+        const result = await response.json();
+  
+        if (isMounted) {
+          setListUsers(result);
+        }
+      } catch (error) {
+        console.log('Error fetching data:', error);
+      }
+    };
+  
+    fetchData();
+  
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     // Check if userData has changed
     if (userData.id !== null && userData.name !== null) {
       // Perform the POST request
       handleAddUserRequest(userData);
-  
-      // Clear the input fields after handling
-      setUserId('');
-      setUserName('');
+
     }
   }, [userData]);
   
@@ -171,13 +190,22 @@ export default function View_ManageUsers() {
   }, [refVisible]); // Run when refVisible changes
 
   // Get the list of users
-  let listUsers = ListUsers();
   let ids = [];
   let names = [];
-  if (listUsers !== null) {
+
+  if (!listUsersUpdated && listUsers) {
+    setListUsersUpdated(true);
+
     // Order the users by ID
     listUsers.sort((a, b) => a.id - b.id);
 
+    for (const user of listUsers) {
+      ids.push(user.id)
+      names.push(user.name)
+    }
+
+
+  } else if (listUsersUpdated) {
     for (const user of listUsers) {
       ids.push(user.id)
       names.push(user.name)

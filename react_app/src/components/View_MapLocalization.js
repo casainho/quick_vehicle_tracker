@@ -2,21 +2,45 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet'; // Make sure to import Leaflet library
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { toPng } from 'html-to-image';
 
 function View_MapLocalization() {
   const viewRef = useRef(null);
 
   // This await fetch the data from the server that has the EScooter data like GPS lat and lon  
   const [data, setData] = useState(null);
-
   const [refVisible, setRefVisible] = useState(false)
   const [availableWidthHeight, setAvailableWidthHeight] = useState([null, null]);
   const [addressGEO, setAddress] = useState(false)
+  const [waitAddressGEO, setWaitAddress] = useState(false)
   const [gPSDataRecords, setGPSDataRecords] = useState(null)
+  const [isExportButtonDisabled, setIsExportButtonDisabled] = useState(false)
+  const [exportButtonText, setExportButtonText] = useState('Export PNG')
+
+  function onClickButtonExport() {
+    setIsExportButtonDisabled(true)
+    setExportButtonText('Exporting...')
+
+    if (viewRef.current) {
+      toPng(viewRef.current)
+        .then((dataUrl) => {
+          // Now you can use `dataUrl` to display the image or save it
+          // For example, display in a new window
+          const img = new Image();
+          img.src = dataUrl;
+          window.open().document.write(img.outerHTML);
+
+          setExportButtonText('Export PNG')
+          setIsExportButtonDisabled(false)
+        })
+        .catch((error) => {
+          console.error('Error exporting image:', error);
+        });
+    }
+  }
 
   function closeDialogGPSDataRecords() {
     setGPSDataRecords(false)
@@ -45,11 +69,11 @@ function View_MapLocalization() {
         setAddress(formattedAddress)
         return formattedAddress;
       } else {
-        console.error('Geocoding error:', data.error || 'Unknown error');
+        console.log('Geocoding error:', data.error || 'Unknown error');
         return null;
       }
     } catch (error) {
-      console.error('Error during geocoding:', error);
+      console.log('Error during geocoding:', error);
       return null;
     }
   }
@@ -72,6 +96,7 @@ function View_MapLocalization() {
         if (storedData) {
           setData(JSON.parse(storedData));
           setGPSDataRecords(true)
+          console.log('setGPSDataRecords: true')
         }
       }
     };
@@ -107,13 +132,12 @@ function View_MapLocalization() {
   let lon = last_record.gps.lon;
 
   let address = ''
-  reverseGeocode(lat, lon);
-  if (addressGEO !== false) {
+  if (waitAddressGEO === false) {
+    setWaitAddress(true);
+    reverseGeocode(lat, lon);
+  } else if (addressGEO !== false) {
     address = addressGEO;
-  } else {
-    return <div>Loading...</div>;
   }
-
 
   // Costum icon of an EScooter
   var iconEScooter = new L.icon({
@@ -161,6 +185,11 @@ function View_MapLocalization() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+
+          {/* Export button on top of the map */}
+          <div style={{ position: 'absolute', top: '85px', left: '10px', zIndex: 1000 }}>
+            <button id='idButtonExport' onClick={onClickButtonExport} disabled={isExportButtonDisabled}>{exportButtonText}</button>
+          </div>
 
           {/* Use the custom icon */}
           <Marker position={[lat, lon]} icon={iconEScooter}>
