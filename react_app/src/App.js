@@ -85,7 +85,7 @@ const menuListItems = (
         <ListItemIcon>
           <MapIcon />
         </ListItemIcon>
-        <ListItemText primary="Dashboard" />
+        <ListItemText primary="Map" />
       </ListItemButton>
 
       <ListItemButton component="a" href="/manage-users" onClick={() => onClickFunction("/manage-users")}>
@@ -104,8 +104,6 @@ const menuListItems = (
   
   </React.Fragment>
 );
-
-let availableHeight;
 
 const defaultTheme = createTheme();
 
@@ -178,6 +176,7 @@ export default function View_Main() {
           <Toolbar />
           <Container >
                   <Routes>
+                    <Route path="/" element={<View_MapLocalization />} />
                     <Route path="/main" element={<View_MapLocalization />} />
                     <Route path="/manage-users" element={<View_ManagerUsers />} />
                     <Route path="/about" element={<View_About />} />

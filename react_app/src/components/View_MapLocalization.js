@@ -129,7 +129,10 @@ function View_MapLocalization() {
             <Popup>
               Date: {formatedDate}<br></br>
               Latitute: {lat}, Longitude: {lon}<br></br>
-              Address: {address}<br></br>
+              <br></br>
+              Address:<br></br>
+              {address}<br></br>
+              <br></br>
               <a href={`https://maps.google.com/?q=${lat},${lon}`} target="_blank" rel="noopener noreferrer">Open in Google Maps</a>
             </Popup>
             

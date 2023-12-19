@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Popup } from 'react-leaflet';
 
 function ListUsers() {
   // This await fetch the data from the server that has Users
@@ -28,6 +29,8 @@ export default function View_ManageUsers() {
   const [availableWidthHeight, setAvailableWidthHeight] = useState([null, null]);
   const [userId, setUserId] = useState('');
   const [userName, setUserName] = useState('');
+  const [showPopupAddUser, setShowPopupAddUser] = useState(false);
+  const [showPopupRemoveUser, setShowPopupRemoveUser] = useState(false);
 
   // State to hold the data to be sent
   const [userData, setUserData] = useState({
@@ -35,6 +38,15 @@ export default function View_ManageUsers() {
     name: null,
   });
 
+  const closePopupAddUser = () => {
+    // Close the popup
+    setShowPopupAddUser(false);
+  };
+
+  const closePopupRemoveUser = () => {
+    // Close the popup
+    setShowPopupRemoveUser(false);
+  };
 
   // Function to handle the POST request
   async function handleAddUserRequest(postData) {
@@ -53,7 +65,7 @@ export default function View_ManageUsers() {
       }
 
       const data = await response.json();
-      console.log('POST request successful. Response:', data);
+      setShowPopupAddUser(true)
 
       // Clear the input fields after handling
       setUserId('');
@@ -65,7 +77,13 @@ export default function View_ManageUsers() {
   }
 
   const handleIdChange = (e) => {
-    setUserId(e.target.value);
+    
+    let value = e.target.value;
+
+    // Check if the input value is an integer
+    if (!isNaN(value) && Number.isInteger(parseFloat(value))) {
+      setUserId(value);
+    }
   };
 
   const handleNameChange = (e) => {
@@ -76,6 +94,10 @@ export default function View_ManageUsers() {
     // Do something with the user input (e.g., send to server, update state)
     console.log('ID:', userId);
     console.log('Name:', userName);
+
+    if (userId === '' || userName === '') {
+      return;
+    }
 
     setUserData({id: userId, name: userName})
   };
@@ -95,6 +117,8 @@ export default function View_ManageUsers() {
       }
 
       console.log('DELETE request successful.');
+
+      setShowPopupRemoveUser(true);
 
     } catch (error) {
       console.error('Error during DELETE request:', error.message);
@@ -163,50 +187,92 @@ export default function View_ManageUsers() {
     const id = ids[index];
     const name = names[index];
     rows_users.push(
-      <tr key={index}>
+      <tr key={index} >
         <td style={{ width: '50%', textAlign: 'center', border: '1px solid #000' }}>{id}</td>
         <td style={{ width: '50%', textAlign: 'center', border: '1px solid #000' }}>{name}</td>
       </tr>
     );
   }
 
-  let div_list_users = (
-      <table>
-        <thead>
-          <tr >
-            <th style={{ textAlign: 'center', border: '1px solid #000' }}>User ID</th>
-            <th style={{ textAlign: 'center', border: '1px solid #000' }}>User Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows_users}
-        </tbody>
-      </table>
+  let users_list = (
+    <table style={{ marginLeft: '0', width: '100%' }}>
+      <thead >
+        <tr >
+          <th style={{ textAlign: 'center', border: '1px solid #000', width: '50%' }}>User ID</th>
+          <th style={{ textAlign: 'center', border: '1px solid #000', width: '50%' }}>User Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows_users}
+      </tbody>
+    </table>
   );
+
+  const styles = `
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 999;
+    }
+  `;
 
   return (
     <div
       ref={el => { viewRef.current = el; setRefVisible(true); }}
-      style={{ width: availableWidthHeight[0] + 'px', height: availableWidthHeight[1] + 'px', border: '1px solid #000'}} >
-        {availableWidthHeight[0] && (
-          <div>
-            <div>
-              <label>
-                ID:
-                <input type="text" value={userId} onChange={handleIdChange} />
-              </label>
-              <br />
-              <label>
-                Name:
-                <input type="text" value={userName} onChange={handleNameChange} />
-              </label>
-              <br />
-              <button style={{ p: '2px' }} onClick={handleRemoveUserClick}>Remove user</button>
-              <button style={{ p: '2px' }} onClick={handleAddUserClick}>Add user</button>
+      style={{ width: availableWidthHeight[0] + 'px', height: availableWidthHeight[1] + 'px'}} >
+
+      <style>{styles}</style>
+
+      {availableWidthHeight[0] && (
+
+        <div style={{ width: '300px', textAlign: 'left', margin: '4px', paddingLeft: '4px', paddingTop: '4px' }}>
+          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left', margin: '2px', width: '100%' }}>
+            <span style={{ marginLeft: '0', fontWeight: 'bold' }}>ID:</span>
+            <input type="text" placeholder="a numeric integer" value={userId} onChange={handleIdChange} style={{ marginLeft: '10px', width: '75%', boxSizing: 'border-box', textAlign: 'right' }} />
+          </label>
+
+          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left', margin: '2px', width: '100%' }}>
+            <span style={{ marginLeft: '0', fontWeight: 'bold' }}>Name:</span>
+            <input type="text" placeholder="user name" value={userName} onChange={handleNameChange} style={{ marginLeft: '10px', width: '75%', boxSizing: 'border-box', textAlign: 'right' }} />
+          </label>
+
+          <div style={{ display: 'flex', justifyContent: 'right', textAlign: 'left', marginTop: '6px', width: '100%' }}>
+            <button disabled={userId === ''} style={{ padding: '4px' }} onClick={handleRemoveUserClick}>Remove user</button>
+            
+            {/* To add a bit of space between the buttons */}
+            <span style={{ marginRight: '6px' }}></span>
+
+            <button disabled={userId === '' || userName === ''} style={{ padding: '4px' }} onClick={handleAddUserClick}>Add user</button>
+          </div>
+
+          <div style={{ width: '300px', textAlign: 'left', paddingTop: '30px'}}>
+            <span style={{fontWeight: 'bold'}} >Users list:</span>
+            {users_list}
+          </div>
+
+          {/* Popup */}
+          {showPopupAddUser && (
+            <div className="popup">
+              <p>User added successfully! Refresh the page.</p>
+              <button onClick={closePopupAddUser}>Close</button>
             </div>
-            <p>Users list</p>
-            {div_list_users}
-          </div>)}
+          )}
+
+          {/* Popup */}
+          {showPopupRemoveUser && (
+            <div className="popup">
+              <p>User removed successfully! Refresh the page.</p>
+              <button onClick={closePopupRemoveUser}>Close</button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
