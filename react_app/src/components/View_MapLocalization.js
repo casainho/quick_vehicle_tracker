@@ -3,12 +3,38 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet'; // Make sure to import Leaflet library
 
 function View_MapLocalization() {
+  const viewRef = useRef(null);
 
   // This await fetch the data from the server that has the EScooter data like GPS lat and lon  
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  const parentRef = useRef(null);
+  const [refVisible, setRefVisible] = useState(false)
+  const [availableWidthHeight, setAvailableWidthHeight] = useState([null, null]);
+  const [addressGEO, setAddress] = useState(false)
+
+  // Function to perform reverse geocoding using OpenStreetMap Nominatim
+  async function reverseGeocode(lat, lon) {
+    const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      if (data.display_name) {
+        // Extract the formatted address
+        const formattedAddress = data.display_name;
+        console.log('Formatted Address:', formattedAddress);
+        setAddress(formattedAddress)
+        return formattedAddress;
+      } else {
+        console.error('Geocoding error:', data.error || 'Unknown error');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error during geocoding:', error);
+      return null;
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,22 +44,31 @@ function View_MapLocalization() {
         setData(result);
       } catch (error) {
         console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
       }
     };
-
-    if (parentRef.current) {
-      const { clientWidth, clientHeight } = parentRef.current;
-      console.log(clientWidth);
-      console.log(clientHeight);
-    }
 
     fetchData();
   }, []); // Empty dependency array to run the effect only once on mount
 
+  useEffect(() => {
+    if (!refVisible) { 
+      return
+    }
+
+    if (viewRef.current) {
+      const parentWidth = viewRef.current.offsetWidth;
+      const parentOffsetLeft = viewRef.current.offsetLeft;
+      const newAvailableWidth = window.innerWidth - parentOffsetLeft - parentWidth;
+
+      const parentHeight = viewRef.current.parentElement.offsetHeight;
+      const parentOffsetTop = viewRef.current.parentElement.offsetTop;
+      const newAvailableHeight = window.innerHeight - parentOffsetTop - parentHeight;
+      setAvailableWidthHeight([newAvailableWidth, newAvailableHeight]);
+    }
+  }, [refVisible]); // Run when refVisible changes
+
   // This react component will be called again when data is fetched and will not enter this if
-  if (data === null) {
+  if (!data) {
     return <div>Loading...</div>;
   }
 
@@ -41,6 +76,15 @@ function View_MapLocalization() {
   let time = last_record.time;
   let lat = last_record.gps.lat;
   let lon = last_record.gps.lon;
+
+  let address = ''
+  reverseGeocode(lat, lon);
+  if (addressGEO !== false) {
+    address = addressGEO;
+  } else {
+    return <div>Loading...</div>;
+  }
+
 
   // Costum icon of an EScooter
   var iconEScooter = new L.icon({
@@ -65,31 +109,33 @@ function View_MapLocalization() {
   const seconds = date.getSeconds();
   let formatedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-  // Calculate the div size, where the map will be placed
-  // This values adjust to the window size, but if window is changed, a manual refrest need to be done
-  let windowInnerWidthStr = window.innerWidth - 290 + 'px';
-  let windowInnerHeightStr = window.innerHeight - 180 + 'px';
-
   return (
-    <div style={{ width: windowInnerWidthStr, height: windowInnerHeightStr }}>
-      <MapContainer center={[lat, lon]} zoom={18} scrollWheelZoom={true} style={{ width: '100%', height: '100%' }}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+    <div
+      ref={el => { viewRef.current = el; setRefVisible(true); }}
+      style={{ width: availableWidthHeight[0] + 'px', height: availableWidthHeight[1] + 'px', border: '1px solid #000'}} >
 
-        {/* Use the custom icon */}
-        <Marker position={[lat, lon]} icon={iconEScooter}>
+      {/* Show the Map only when availableWidthHeight values are not null */}
+      {availableWidthHeight[0] && (
+        <MapContainer center={[lat, lon]} zoom={18} scrollWheelZoom={true} >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-          {/* Use this Popup to show to user, the position and time details */}
-          <Popup>
-            Date: {formatedDate}<br></br>
-            Latitute: {lat}, Longitude: {lon}<br></br>
-            <a href={`https://maps.google.com/?q=${lat},${lon}`} target="_blank" rel="noopener noreferrer">Open in Google Maps</a>
-          </Popup>
-          
-        </Marker>
-      </MapContainer>
+          {/* Use the custom icon */}
+          <Marker position={[lat, lon]} icon={iconEScooter}>
+
+            {/* Use this Popup to show to user, the position and time details */}
+            <Popup>
+              Date: {formatedDate}<br></br>
+              Latitute: {lat}, Longitude: {lon}<br></br>
+              Address: {address}<br></br>
+              <a href={`https://maps.google.com/?q=${lat},${lon}`} target="_blank" rel="noopener noreferrer">Open in Google Maps</a>
+            </Popup>
+            
+          </Marker>
+        </MapContainer>
+      )}
     </div>
   );
 }

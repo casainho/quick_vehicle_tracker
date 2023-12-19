@@ -13,31 +13,20 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Badge from '@mui/material/Badge';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import LinkMaterial from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { mainListItems as menuListItems } from './components/listItems.js';
 import SearchIcon from '@mui/icons-material/Search';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { PersonAddAlt } from '@mui/icons-material';
+import MapIcon from '@mui/icons-material/Map';
+import InfoIcon from '@mui/icons-material/Info';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import View_MapLocalization from './components/View_MapLocalization.js'
 import View_About from './components/View_About.js';
-
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <LinkMaterial color="inherit" href="https://mui.com/">
-        Your Website
-      </LinkMaterial>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
+import View_ManagerUsers from './components/View_ManageUsers.js';
 
 const drawerWidth = 240;
 
@@ -85,7 +74,39 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
-// TODO remove, this demo shouldn't need to reset the theme.
+const onClickFunction = (link) => {
+  window.location.href = link
+}
+
+const menuListItems = (
+  <React.Fragment>
+    
+      <ListItemButton component="a" href="/main" onClick={() => onClickFunction("/main")}>
+        <ListItemIcon>
+          <MapIcon />
+        </ListItemIcon>
+        <ListItemText primary="Dashboard" />
+      </ListItemButton>
+
+      <ListItemButton component="a" href="/manage-users" onClick={() => onClickFunction("/manage-users")}>
+      <ListItemIcon>
+        <PersonAddAlt />
+      </ListItemIcon>
+      <ListItemText primary="Manage Users" />
+    </ListItemButton>
+
+    <ListItemButton component="a" href="/about" onClick={() => onClickFunction("/about")}>
+      <ListItemIcon>
+        <InfoIcon />
+      </ListItemIcon>
+      <ListItemText primary="About" />
+    </ListItemButton>
+  
+  </React.Fragment>
+);
+
+let availableHeight;
+
 const defaultTheme = createTheme();
 
 export default function View_Main() {
@@ -152,31 +173,15 @@ export default function View_Main() {
           </List>
         </Drawer>
         <Box
-          component="main"
-          sx={{
-            height: '100%',
-            backgroundColor: (theme) =>
-              theme.palette.mode === 'light'
-                ? theme.palette.grey[100]
-                : theme.palette.grey[900],
-          }}
+
         >
           <Toolbar />
-          <Container sx={{ mt: 4, mb: 4}} >
-            <Grid container spacing={1} >
-              <Grid item xs={12} >
-                <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }} >
-
+          <Container >
                   <Routes>
-                    <Route path="/main" element={<View_MapLocalization sx={{ flex: 1, height: '100%' }} />} />
-                    <Route path="/register-user" element={<View_About />} />
+                    <Route path="/main" element={<View_MapLocalization />} />
+                    <Route path="/manage-users" element={<View_ManagerUsers />} />
                     <Route path="/about" element={<View_About />} />
                   </Routes>
-
-                </Paper>
-              </Grid>
-            </Grid>
-            <Copyright sx={{ pt: 2 }} />
           </Container>
         </Box>
       </Box>
