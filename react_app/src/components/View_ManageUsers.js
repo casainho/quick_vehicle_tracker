@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Popup } from 'react-leaflet';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 function ListUsers() {
   // This await fetch the data from the server that has Users
@@ -208,26 +211,10 @@ export default function View_ManageUsers() {
     </table>
   );
 
-  const styles = `
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 20px;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      z-index: 999;
-    }
-  `;
-
   return (
     <div
       ref={el => { viewRef.current = el; setRefVisible(true); }}
       style={{ width: availableWidthHeight[0] + 'px', height: availableWidthHeight[1] + 'px'}} >
-
-      <style>{styles}</style>
 
       {availableWidthHeight[0] && (
 
@@ -256,21 +243,24 @@ export default function View_ManageUsers() {
             {users_list}
           </div>
 
-          {/* Popup */}
-          {showPopupAddUser && (
-            <div className="popup">
-              <p>User added successfully! Refresh the page.</p>
-              <button onClick={closePopupAddUser}>Close</button>
-            </div>
-          )}
+          <Dialog open={showPopupAddUser} onClose={closePopupAddUser} >
+            <DialogTitle>User added</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                User added successfully! Refresh the page.
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
 
-          {/* Popup */}
-          {showPopupRemoveUser && (
-            <div className="popup">
-              <p>User removed successfully! Refresh the page.</p>
-              <button onClick={closePopupRemoveUser}>Close</button>
-            </div>
-          )}
+          <Dialog open={showPopupRemoveUser} onClose={closePopupRemoveUser} >
+            <DialogTitle>User removed</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                User removed successfully! Refresh the page.
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+
         </div>
       )}
     </div>

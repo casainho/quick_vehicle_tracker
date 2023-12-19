@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet'; // Make sure to import Leaflet library
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 function View_MapLocalization() {
   const viewRef = useRef(null);
@@ -11,6 +16,19 @@ function View_MapLocalization() {
   const [refVisible, setRefVisible] = useState(false)
   const [availableWidthHeight, setAvailableWidthHeight] = useState([null, null]);
   const [addressGEO, setAddress] = useState(false)
+  const [gPSDataRecords, setGPSDataRecords] = useState(null)
+
+  function closeDialogGPSDataRecords() {
+    setGPSDataRecords(false)
+  }
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const storedData = localStorage.getItem('quick_vehicle_tracker');
+    if (storedData) {
+      setData(JSON.parse(storedData));
+    }
+  }, []);
 
   // Function to perform reverse geocoding using OpenStreetMap Nominatim
   async function reverseGeocode(lat, lon) {
@@ -41,9 +59,20 @@ function View_MapLocalization() {
       try {
         const response = await fetch('http://localhost:3010/gps_data_records');
         const result = await response.json();
+
+        // Store the data locally
+        localStorage.setItem('qvt_gps_data_records', JSON.stringify(result));
+        setGPSDataRecords(false)
+
         setData(result);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        
+        // Let's recover the previous data in cache
+        const storedData = localStorage.getItem('qvt_gps_data_records');
+        if (storedData) {
+          setData(JSON.parse(storedData));
+          setGPSDataRecords(true)
+        }
       }
     };
 
@@ -109,10 +138,21 @@ function View_MapLocalization() {
   const seconds = date.getSeconds();
   let formatedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
+
   return (
     <div
       ref={el => { viewRef.current = el; setRefVisible(true); }}
       style={{ width: availableWidthHeight[0] + 'px', height: availableWidthHeight[1] + 'px', border: '1px solid #000'}} >
+
+      <Dialog open={gPSDataRecords} onClose={closeDialogGPSDataRecords} >
+        <DialogTitle>Map data from local cache</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+          Error getting data from the server!<br></br>
+          The data on the map is from local cache.
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
 
       {/* Show the Map only when availableWidthHeight values are not null */}
       {availableWidthHeight[0] && (
