@@ -134,6 +134,7 @@ function View_MapLocalization() {
   let time = last_record.time;
   let lat = last_record.gps.lat;
   let lon = last_record.gps.lon;
+  let battery_soc = last_record.battery_soc;
 
   // Calculate the date and time from last GPS data record
   // Linux time to string
@@ -202,6 +203,7 @@ function View_MapLocalization() {
             <Popup>
               Date: {formatedDate}<br></br>
               Latitute: {lat}, Longitude: {lon}<br></br>
+              Battery SOC: {battery_soc} %<br></br>
               <br></br>
               Address:<br></br>
               {address}<br></br>
