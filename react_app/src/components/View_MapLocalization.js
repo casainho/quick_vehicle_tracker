@@ -20,19 +20,20 @@ function View_MapLocalization() {
   const [isExportButtonDisabled, setIsExportButtonDisabled] = useState(false)
   const [exportButtonText, setExportButtonText] = useState('Export PNG')
 
+  // onClick button action to export the map to PNG
   function onClickButtonExport() {
+    // Disable the button while exporting
     setIsExportButtonDisabled(true)
     setExportButtonText('Exporting...')
 
     if (viewRef.current) {
       toPng(viewRef.current)
         .then((dataUrl) => {
-          // Now you can use `dataUrl` to display the image or save it
-          // For example, display in a new window
           const img = new Image();
           img.src = dataUrl;
           window.open().document.write(img.outerHTML);
 
+          // re-enable the button after exporting
           setExportButtonText('Export PNG')
           setIsExportButtonDisabled(false)
         })
@@ -46,7 +47,7 @@ function View_MapLocalization() {
     setGPSDataRecords(false)
   }
 
-  // Load data from localStorage on component mount
+  // Read the previous map data, on the local cache
   useEffect(() => {
     const storedData = localStorage.getItem('quick_vehicle_tracker');
     if (storedData) {
@@ -54,7 +55,7 @@ function View_MapLocalization() {
     }
   }, []);
 
-  // Function to perform reverse geocoding using OpenStreetMap Nominatim
+  // Function to perform reverse geocoding using OpenStreetMap
   async function reverseGeocode(lat, lon) {
     const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
 
@@ -78,6 +79,7 @@ function View_MapLocalization() {
     }
   }
 
+  // GET the map data from the server: ForAPI_REST
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -104,6 +106,7 @@ function View_MapLocalization() {
     fetchData();
   }, []); // Empty dependency array to run the effect only once on mount
 
+  // Calculate the window size
   useEffect(() => {
     if (!refVisible) { 
       return
@@ -121,16 +124,29 @@ function View_MapLocalization() {
     }
   }, [refVisible]); // Run when refVisible changes
 
-  // This react component will be called again when data is fetched and will not enter this if
+  // This react component will be called again when data is fetched
   if (!data) {
     return <div>Loading...</div>;
   }
 
+  // Get the last GPS data record
   let last_record = data[data.length - 1];
   let time = last_record.time;
   let lat = last_record.gps.lat;
   let lon = last_record.gps.lon;
 
+  // Calculate the date and time from last GPS data record
+  // Linux time to string
+  const date = new Date(time * 1000);
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // Months are zero-based, so add 1
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  let formatedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+  // Try to male the ReverseGeocode only once
   let address = ''
   if (waitAddressGEO === false) {
     setWaitAddress(true);
@@ -150,18 +166,6 @@ function View_MapLocalization() {
     iconAnchor: [23, 46], // point of the icon which will correspond to marker's location
     popupAnchor: [0, -23] // point from which the popup should open relative to the iconAnchor
   });
-
-  // Calculate the date and time
-  // Linux time to string
-  const date = new Date(time * 1000);
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1; // Months are zero-based, so add 1
-  const day = date.getDate();
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const seconds = date.getSeconds();
-  let formatedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
 
   return (
     <div
