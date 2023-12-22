@@ -15,22 +15,6 @@ export default function View_ManageUsers() {
   const [showPopupAddUser, setShowPopupAddUser] = useState(false);
   const [showPopupRemoveUser, setShowPopupRemoveUser] = useState(false);
 
-  // const handleExportClick = () => {
-  //   if (viewRef.current) {
-  //     htmlToImage.toPng(viewRef.current)
-  //       .then((dataUrl) => {
-  //         // Create a temporary link element and trigger a download
-  //         const link = document.createElement('a');
-  //         link.href = dataUrl;
-  //         link.download = 'exported_map.png';
-  //         link.click();
-  //       })
-  //       .catch((error) => {
-  //         console.error('Error exporting map:', error);
-  //       });
-  //   }
-  // };
-
   // State to hold the data to be sent
   const [userData, setUserData] = useState({
     id: null,
