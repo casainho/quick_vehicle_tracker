@@ -1,3 +1,0 @@
-Adafruit CircuitPython 8.2.9 on 2023-12-06; ESP32-S2-DevKitC-1-N4 with ESP32S2
-Board ID:espressif_esp32s2_devkitc_1_n4
-UID:487F30DD0B85
